@@ -12,7 +12,7 @@ def extract_text_from_pdf(pdf_path):
     return text
 
 # 2. Ruta a tu archivo PDF
-pdf_path = r"C:\Users\USUARIO\Documents\PROYECTO VEL - BIM\05. COORDINACION\05.PYTHON\Generar_PDF_Concreto\Detalle de la incidencia-202509192028.pdf"
+pdf_path = r"C:\Users\USUARIO\Documents\PROYECTO VEL - BIM\05. COORDINACION\05. PYTHON\Generar_PDF_Concreto\Detalle de la incidencia-202509192028.pdf"
 
 # 3. Extraer texto del PDF
 pdf_text = extract_text_from_pdf(pdf_path)
