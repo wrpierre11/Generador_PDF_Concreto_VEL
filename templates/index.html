@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Automatización de Concretos</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f4; }
+        .container { max-width: 900px; margin: auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1, h2 { text-align: center; color: #333; }
+        
+        /* Estilos para el nuevo contenedor de formularios */
+        .form-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        /* Estilos de las secciones individuales */
+        .form-section {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            flex: 1; /* Hace que ambas secciones ocupen el mismo espacio */
+        }
+
+        input[type="file"], input[type="text"] { display: block; width: 90%; margin: 10px 0; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        input[type="submit"] { background-color: #007BFF; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
+        input[type="submit"]:hover { background-color: #0056b3; }
+        .result { margin-top: 20px; text-align: center; }
+        .result a { color: #007BFF; text-decoration: none; }
+        .result a:hover { text-decoration: underline; }
+
+        /* Estilos del logo (opcional) */
+        .logo-container { text-align: center; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo de la Empresa" style="width:300px;">
+        </div>
+        <h1>CIG Seguimiento Concretos Velodromo</h1>
+        
+        <div class="form-container">
+            <div class="form-section">
+                <h2>1. Seguimiento en sitio</h2>
+                <form action="/process_pdf" method="post" enctype="multipart/form-data">
+                    <p>Selecciona un reporte:</p>
+                    <input type="file" name="pdf_file" accept=".pdf" required>
+                    <p>Nombra el archivo Excel generado:</p>
+                    <input type="text" name="excel_name_pdf" placeholder="Ej: Datos_del_PDF.xlsx" required>
+                    <input type="submit" value="Generar Excel del PDF">
+                </form>
+            </div>
+
+            <div class="form-section">
+                <h2>2. Generacion seguimiento</h2>
+                <form action="/merge_excel" method="post" enctype="multipart/form-data">
+                    <p>Selecciona el archivo teorico y el reporte:</p>
+                    <p>Archivo 1 (Teórico):</p>
+                    <input type="file" name="teorico_file" accept=".xlsx" required>
+                    <p>Archivo 2 (Record):</p>
+                    <input type="file" name="record_file" accept=".xlsx" required>
+                    <p>Nombra el archivo Excel combinado:</p>
+                    <input type="text" name="excel_name_merge" placeholder="Ej: Reporte_Final.xlsx" required>
+                    <input type="submit" value="Combinar y generar Excel">
+                </form>
+            </div>
+        </div>
+        <div class="result">{{ pdf_result }}{{ excel_result }}</div>
+    </div>
+</body>
+</html>
+</html>
