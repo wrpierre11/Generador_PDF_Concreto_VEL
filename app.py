@@ -7,8 +7,14 @@ import uuid
 
 app = Flask(__name__)
 
-# Las funciones para procesar los datos no cambian
+# Directorio para archivos temporales
+TEMP_DIR = 'temp'
 
+# Si el directorio no existe, lo crea
+if not os.path.exists(TEMP_DIR):
+    os.makedirs(TEMP_DIR)
+
+# Función para extraer texto de un PDF
 def extract_text_from_pdf(pdf_path):
     text = ""
     with open(pdf_path, "rb") as file:
@@ -36,7 +42,7 @@ def process_pdf():
     if not excel_name.endswith('.xlsx'):
         excel_name += '.xlsx'
 
-    temp_path = os.path.join("temp", f"{uuid.uuid4()}_{pdf_file.filename}")
+    temp_path = os.path.join(TEMP_DIR, f"{uuid.uuid4()}_{pdf_file.filename}")
     os.makedirs(os.path.dirname(temp_path), exist_ok=True)
     pdf_file.save(temp_path)
 
@@ -45,15 +51,19 @@ def process_pdf():
         location_matches = re.findall(r"Location details\s+(\d+)", pdf_text)
         vaciado_matches = re.findall(r"CIG_Vaciado\s+([^\s]+)", pdf_text)
         mezclado_matches = re.findall(r"CIG_Tipo_Mezclado\s+([^\s]+)", pdf_text)
+        fecha_vaciado_matches = re.findall(r"CIG_Fecha_Vaciado\s+([^\s]+)", pdf_text)
+        # Búsqueda del campo CIG_Ensayo_Compresion
+        # ensayo_compresion_matches = re.findall(r"CIG_Ensayo_Compresion\s+n\"\s*,\s*\"([^\"]*)\"", pdf_text)
 
-        if location_matches and vaciado_matches and mezclado_matches:
+        if location_matches and vaciado_matches and mezclado_matches and fecha_vaciado_matches:
             data = {
                 "Location details": location_matches,
                 "CIG_Vaciado": vaciado_matches,
-                "CIG_Tipo_Mezclado": mezclado_matches
+                "CIG_Tipo_Mezclado": mezclado_matches,
+                "CIG_Fecha_Vaciado": fecha_vaciado_matches,
             }
             df = pd.DataFrame(data)
-            output_excel_path = os.path.join("temp", excel_name)
+            output_excel_path = os.path.join(TEMP_DIR, excel_name)
             df.to_excel(output_excel_path, index=False)
             
             return send_file(output_excel_path, as_attachment=True, download_name=excel_name)
@@ -80,8 +90,8 @@ def merge_excel():
     if not excel_name.endswith('.xlsx'):
         excel_name += '.xlsx'
 
-    temp_teorico_path = os.path.join("temp", f"{uuid.uuid4()}_{teorico_file.filename}")
-    temp_record_path = os.path.join("temp", f"{uuid.uuid4()}_{record_file.filename}")
+    temp_teorico_path = os.path.join(TEMP_DIR, f"{uuid.uuid4()}_{teorico_file.filename}")
+    temp_record_path = os.path.join(TEMP_DIR, f"{uuid.uuid4()}_{record_file.filename}")
     os.makedirs(os.path.dirname(temp_teorico_path), exist_ok=True)
 
     teorico_file.save(temp_teorico_path)
@@ -99,7 +109,7 @@ def merge_excel():
             how="left"
         )
         
-        output_excel_path = os.path.join("temp", excel_name)
+        output_excel_path = os.path.join(TEMP_DIR, excel_name)
         df_combinado.to_excel(output_excel_path, index=False)
         
         return send_file(output_excel_path, as_attachment=True, download_name=excel_name)
