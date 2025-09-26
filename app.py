@@ -52,23 +52,41 @@ def process_pdf():
         vaciado_matches = re.findall(r"CIG_Vaciado\s+([^\s]+)", pdf_text)
         mezclado_matches = re.findall(r"CIG_Tipo_Mezclado\s+([^\s]+)", pdf_text)
         fecha_vaciado_matches = re.findall(r"CIG_Fecha_Vaciado\s+([^\s]+)", pdf_text)
-        # Búsqueda del campo CIG_Ensayo_Compresion
-        # ensayo_compresion_matches = re.findall(r"CIG_Ensayo_Compresion\s+n\"\s*,\s*\"([^\"]*)\"", pdf_text)
+        
+        # CORRECCIÓN: Extraer el campo CIG_Ensayo_Comp
+        ensayo_comp_matches = re.findall(r"CIG_Ensayo_Comp\s+([^\s]+)", pdf_text)
 
-        if location_matches and vaciado_matches and mezclado_matches and fecha_vaciado_matches:
+        if location_matches and vaciado_matches and mezclado_matches and fecha_vaciado_matches and ensayo_comp_matches:
             data = {
                 "Location details": location_matches,
                 "CIG_Vaciado": vaciado_matches,
                 "CIG_Tipo_Mezclado": mezclado_matches,
                 "CIG_Fecha_Vaciado": fecha_vaciado_matches,
+                "CIG_Ensayo_Comp": ensayo_comp_matches  # AGREGAR ESTE CAMPO
             }
+            
+            # Verificar que todos los arrays tengan la misma longitud
+            min_length = min(len(location_matches), len(vaciado_matches), len(mezclado_matches), 
+                            len(fecha_vaciado_matches), len(ensayo_comp_matches))
+            
+            # Recortar todos los arrays a la misma longitud
+            data = {key: values[:min_length] for key, values in data.items()}
+            
             df = pd.DataFrame(data)
             output_excel_path = os.path.join(TEMP_DIR, excel_name)
             df.to_excel(output_excel_path, index=False)
             
             return send_file(output_excel_path, as_attachment=True, download_name=excel_name)
         else:
-            return render_template('index.html', pdf_result="Error: No se encontraron todos los datos en el PDF.")
+            # Para debugging, muestra qué campos se encontraron
+            found_fields = {
+                "Location details": len(location_matches) if location_matches else 0,
+                "CIG_Vaciado": len(vaciado_matches) if vaciado_matches else 0,
+                "CIG_Tipo_Mezclado": len(mezclado_matches) if mezclado_matches else 0,
+                "CIG_Fecha_Vaciado": len(fecha_vaciado_matches) if fecha_vaciado_matches else 0,
+                "CIG_Ensayo_Comp": len(ensayo_comp_matches) if ensayo_comp_matches else 0
+            }
+            return render_template('index.html', pdf_result=f"Error: No se encontraron todos los datos en el PDF. Campos encontrados: {found_fields}")
     except Exception as e:
         return render_template('index.html', pdf_result=f"Ocurrió un error: {str(e)}")
     finally:
